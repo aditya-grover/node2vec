@@ -24,7 +24,7 @@ def parse_args():
 	parser.add_argument('--input', nargs='?', default='graph/karate.edgelist',
 	                    help='Input graph path')
 
-	parser.add_argument('--save-path', nargs='?', default='emb/karate.emb',
+	parser.add_argument('--output', nargs='?', default='emb/karate.emb',
 	                    help='Embeddings path')
 
 	parser.add_argument('--dimensions', type=int, default=128,
@@ -36,6 +36,15 @@ def parse_args():
 	parser.add_argument('--num-walks', type=int, default=10,
 	                    help='Number of walks per source. Default is 40.')
 
+	parser.add_argument('--window-size', type=int, default=10,
+                    	help='Context size for optimization. Default is 10.')
+
+	parser.add_argument('--iter', default=1, type=int,
+                      help='Number of epochs in SGD')
+
+	parser.add_argument('--workers', type=int, default=8,
+	                    help='Number of parallel workers. Default is 8.')
+
 	parser.add_argument('--p', type=float, default=1,
 	                    help='Return hyperparameter. Default is 1.')
 
@@ -43,12 +52,12 @@ def parse_args():
 	                    help='Inout hyperparameter. Default is 1.')
 
 	parser.add_argument('--weighted', dest='weighted', action='store_true',
-	                    help="To use perplexity as a measure")
+	                    help='Boolean specifying (un)weighted. Default is unweighted.')
 	parser.add_argument('--unweighted', dest='unweighted', action='store_false')
 	parser.set_defaults(weighted=False)
 
 	parser.add_argument('--directed', dest='directed', action='store_true',
-	                    help="To use perplexity as a measure")
+	                    help='Graph is (un)directed. Default is undirected.')
 	parser.add_argument('--undirected', dest='undirected', action='store_false')
 	parser.set_defaults(directed=False)
 
@@ -62,7 +71,6 @@ def read_graph():
 		G = nx.read_edgelist(args.input, nodetype=int, data=(('weight',float),), create_using=nx.DiGraph())
 	else:
 		G = nx.read_edgelist(args.input, nodetype=int, create_using=nx.DiGraph())
-		G = nx.barbell_graph(2,2)
 		for edge in G.edges():
 			G[edge[0]][edge[1]]['weight'] = 1
 
@@ -73,7 +81,10 @@ def read_graph():
 
 def learn_embeddings(walks):
 
-
+	walks = [map(str, walk) for walk in walks]
+	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, 
+		workers=args.workers, iter=args.iter)
+	model.save_word2vec_format(args.output)
 	return
 
 def main(args):
