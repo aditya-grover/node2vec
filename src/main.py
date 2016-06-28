@@ -1,14 +1,19 @@
 '''
+Reference implementation of node2vec. 
 
+Author: Aditya Grover
 
-
+For more details, refer to the paper:
+node2vec: Scalable Feature Learning for Networks
+Aditya Grover and Jure Leskovec 
+Knowledge Discovery and Data Mining (KDD), 2016
 '''
-
 
 import argparse
 import numpy as np
 import networkx as nx
 import node2vec
+from gensim.models import Word2Vec
 
 def parse_args():
 	'''

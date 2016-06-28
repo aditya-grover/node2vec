@@ -7,12 +7,15 @@ import random
 # for details
 
 def alias_setup(probs):
-    K       = len(probs)
-    q       = np.zeros(K)
-    J       = np.zeros(K, dtype=np.int)
+	'''
+	Compute utility lists for non-uniform sampling from discrete distributions.
+	'''
+    K = len(probs)
+    q = np.zeros(K)
+    J = np.zeros(K, dtype=np.int)
  
     smaller = []
-    larger  = []
+    larger = []
     for kk, prob in enumerate(probs):
         q[kk] = K*prob
         if q[kk] < 1.0:
@@ -34,7 +37,10 @@ def alias_setup(probs):
     return J, q
 
 def alias_draw(J, q):
-    K  = len(J)
+	'''
+	Draw sample from a non-uniform discrete distribution using alias sampling.
+	'''
+    K = len(J)
  
     kk = int(np.floor(np.random.rand()*K))
     if np.random.rand() < q[kk]:
