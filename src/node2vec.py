@@ -95,6 +95,7 @@ class Graph():
 			random.shuffle(nodes)
 			for node in nodes:
 				walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
+				
 		return walks
 
 	def get_alias_edge(self, src, dst):
@@ -115,6 +116,7 @@ class Graph():
 				unnormalized_probs.append(G[dst][dst_nbr]['weight']/q)
 		norm_const = sum(unnormalized_probs)
 		normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
+
 		return alias_setup(normalized_probs)
 
 	def preprocess_transition_probs(self):
