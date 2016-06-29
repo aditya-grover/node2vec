@@ -11,11 +11,11 @@ The *node2vec* algorithm learns continuous representations for nodes in any (un)
 ### Basic Usage
 
 #### Example
-To run *node2vec* on Zachary's karate club network, execute the following command from the project home directory:
+To run *node2vec* on Zachary's karate club network, execute the following command from the project home directory:<br/>
 	``python src/main.py --input data/karate.edgelist --output emb/karate.emd``
 
 #### Options
-You can check out the other options available to use with *node2vec* using:
+You can check out the other options available to use with *node2vec* using:<br/>
 	``python src/main.py --help``
 
 #### Input
