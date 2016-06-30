@@ -6,7 +6,7 @@ This repository provides a reference implementation of *node2vec* as described i
 > Knowledge Discovery and Data Mining, 2016.<br>
 > <Insert paper link>
 
-The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the project page <snap.stanford.edu/node2vec/> for more details. 
+The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the [project page](snap.stanford.edu/node2vec/) for more details. 
 
 ### Basic Usage
 
