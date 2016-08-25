@@ -164,12 +164,13 @@ def read_graph(input,weighted=False,directed=False):
 
 	return G
 
-def learn_embeddings(walks,output,dimensions=128,window_size=10,workers=8,iter=1):
+def learn_embeddings(walks,output=None,dimensions=128,window_size=10,workers=8,iter=1):
 	'''
 	Learn embeddings by optimizing the Skipgram objective using SGD.
 	'''
 	walks = [map(str, walk) for walk in walks]
 	model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0, sg=1, workers=workers, iter=iter)
-	model.save_word2vec_format(output)
+	if output:
+         model.save_word2vec_format(output)
 	
-	return
+	return model,output
