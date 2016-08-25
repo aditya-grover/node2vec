@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 import random
-
+from gensim.models import Word2Vec
 
 class Graph():
 	def __init__(self, nx_G, is_directed, p, q):
@@ -43,9 +43,9 @@ class Graph():
 		G = self.G
 		walks = []
 		nodes = list(G.nodes())
-		print 'Walk iteration:'
+		print('Walk iteration:')
 		for walk_iter in range(num_walks):
-			print str(walk_iter+1), '/', str(num_walks)
+			print(str(walk_iter+1), '/', str(num_walks))
 			random.shuffle(nodes)
 			for node in nodes:
 				walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
@@ -147,3 +147,30 @@ def alias_draw(J, q):
 	    return kk
 	else:
 	    return J[kk]
+
+def read_graph(input,weighted=False,directed=False):
+	'''
+	Reads the input network in networkx.
+	'''
+	if weighted:
+		G = nx.read_edgelist(input, nodetype=int, data=(('weight',float),), create_using=nx.DiGraph())
+	else:
+		G = nx.read_edgelist(input, nodetype=int, create_using=nx.DiGraph())
+		for edge in G.edges():
+			G[edge[0]][edge[1]]['weight'] = 1
+
+	if not directed:
+		G = G.to_undirected()
+
+	return G
+
+def learn_embeddings(walks,output=None,dimensions=128,window_size=10,workers=8,iter=1):
+	'''
+	Learn embeddings by optimizing the Skipgram objective using SGD.
+	'''
+	walks = [map(str, walk) for walk in walks]
+	model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0, sg=1, workers=workers, iter=iter)
+	if output:
+         model.save_word2vec_format(output)
+	
+	return model,output
