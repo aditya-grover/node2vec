@@ -11,8 +11,7 @@ from setuptools import setup
 
 DISTNAME="node2vec"
 DESCRIPTION=descr
-MAINTAINER='Russ Poldrack'
-MAINTAINER_EMAIL='poldrack@stanford.edu'
+MAINTAINER='node2vec team'
 LICENSE='MIT'
 URL='http://snap.stanford.edu/node2vec/'
 DOWNLOAD_URL='https://github.com/aditya-grover/node2vec'
@@ -50,8 +49,9 @@ if __name__ == "__main__":
 
     setup(name=DISTNAME,
         maintainer=MAINTAINER,
-        maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
+        include_package_data=True,
+        package_data={'node2vec.tests':['emb/karate.emb','graph/karate.edgelist']},
         license=LICENSE,
         version=VERSION,
         url=URL,
