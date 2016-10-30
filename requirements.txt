@@ -1,0 +1,3 @@
+networkx==1.11
+numpy==1.11.2
+gensim==0.13.3
