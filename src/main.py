@@ -99,9 +99,6 @@ def main(args):
 	walks = G.simulate_walks(args.num_walks, args.walk_length)
 	learn_embeddings(walks)
 
-args = parse_args()
-main(args)
-
-
-
-
+if __name__ == "__main__":
+	args = parse_args()
+	main(args)
