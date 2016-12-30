@@ -1,11 +1,11 @@
 '''
-Reference implementation of node2vec. 
+Reference implementation of node2vec.
 
 Author: Aditya Grover
 
 For more details, refer to the paper:
 node2vec: Scalable Feature Learning for Networks
-Aditya Grover and Jure Leskovec 
+Aditya Grover and Jure Leskovec
 Knowledge Discovery and Data Mining (KDD), 2016
 '''
 
@@ -67,15 +67,14 @@ def read_graph():
 	'''
 	Reads the input network in networkx.
 	'''
-	if args.weighted:
-		G = nx.read_edgelist(args.input, nodetype=int, data=(('weight',float),), create_using=nx.DiGraph())
-	else:
-		G = nx.read_edgelist(args.input, nodetype=int, create_using=nx.DiGraph())
-		for edge in G.edges():
-			G[edge[0]][edge[1]]['weight'] = 1
+	initial_graph = nx.DiGraph() if args.directed else nx.Graph()
 
-	if not args.directed:
-		G = G.to_undirected()
+	if args.weighted:
+		G = nx.read_edgelist(args.input, nodetype=int, data=(('weight',float),), create_using=initial_graph)
+	else:
+		G = nx.read_edgelist(args.input, nodetype=int, create_using=initial_graph)
+		for u, v in G.edges_iter():
+			G[u][v]['weight'] = 1
 
 	return G
 
@@ -86,7 +85,7 @@ def learn_embeddings(walks):
 	walks = [map(str, walk) for walk in walks]
 	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
 	model.save_word2vec_format(args.output)
-	
+
 	return
 
 def main(args):
