@@ -12,3 +12,7 @@ build
 .project
 .settings
 .idea
+.npy
+.emb
+.emd
+emb/karate.emb
