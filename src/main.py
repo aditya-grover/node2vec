@@ -110,7 +110,7 @@ def learn_embeddings(walks):
     emb_file = '%s/../emb/%s.emb' % (c, args.input_name)
     model.wv.save_word2vec_format(emb_file)
     print 'args.window_size', args.window_size
-    convert_embed_to_np(emb_file, '%s/../emb/%s_emb_window_1.npy' % (c, args.input_name))
+    convert_embed_to_np(emb_file, '%s/../emb/%s_emb_iter_%s_p_%s_q_%s_walk_%s_win_%s.npy' % (c, args.input_name, args.iter, args.p, args.q, args.num_walks, args.window_size))
 
     return
 
