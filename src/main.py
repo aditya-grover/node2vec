@@ -15,6 +15,7 @@ import os
 import networkx as nx
 import node2vec
 import cPickle as pkl
+import numpy as np
 from gensim.models import Word2Vec
 
 c = os.path.dirname(os.path.realpath(__file__))
@@ -26,11 +27,11 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description="Run node2vec.")
 
-    parser.add_argument('--input_name', nargs='?', default='cora',
-                        help='Input graph path. karate or cora.')
+    parser.add_argument('--input_name', nargs='?', default='blog',
+                        help='Input graph path. karate or cora or blog.')
 
-    parser.add_argument('--input_type', nargs='?', default='graph',
-                        help='Input graph path. edgelist or graph.')
+    parser.add_argument('--input_type', nargs='?', default='npy',
+                        help='Input graph path. edgelist or graph or npy.')
 
     parser.add_argument('--dimensions', type=int, default=200,
                         help='Number of dimensions. Default is 128.')
@@ -91,6 +92,11 @@ def read_graph():
         print G
         for edge in G.edges():
             G[edge[0]][edge[1]]['weight'] = 1
+    elif args.input_type == 'npy':
+        assert (not args.weighted)
+        input = '%s/../graph/%s_adj.npy' % (c, args.input_name)
+        G = nx.from_numpy_matrix(np.load(input))
+
 
     if not args.directed:
         G = G.to_undirected()
@@ -110,7 +116,7 @@ def learn_embeddings(walks):
     emb_file = '%s/../emb/%s.emb' % (c, args.input_name)
     model.wv.save_word2vec_format(emb_file)
     print 'args.window_size', args.window_size
-    convert_embed_to_np(emb_file, '%s/../emb/%s_emb_window_1.npy' % (c, args.input_name))
+    convert_embed_to_np(emb_file, '%s/../emb/%s_emb.npy' % (c, args.input_name))
 
     return
 
@@ -119,10 +125,15 @@ def main(args):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
+    print 'Reading graph'
     nx_G = read_graph()
+    print 'Creating node2vec graph'
     G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
+    print 'Preprocessing'
     G.preprocess_transition_probs()
+    print 'Generating walks'
     walks = G.simulate_walks(args.num_walks, args.walk_length)
+    print 'Learning embeddings'
     learn_embeddings(walks)
 
 
