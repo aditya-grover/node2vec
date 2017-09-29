@@ -27,11 +27,11 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description="Run node2vec.")
 
-    parser.add_argument('--input_name', nargs='?', default='blog',
-                        help='Input graph path. karate or cora or blog.')
+    parser.add_argument('--input_name', nargs='?', default='flickr',
+                        help='Input graph path. karate or cora or blog or flickr.')
 
-    parser.add_argument('--input_type', nargs='?', default='npy',
-                        help='Input graph path. edgelist or graph or npy.')
+    parser.add_argument('--input_type', nargs='?', default='txt',
+                        help='Input graph path. edgelist or graph or npy or txt.')
 
     parser.add_argument('--dimensions', type=int, default=200,
                         help='Number of dimensions. Default is 128.')
@@ -97,6 +97,13 @@ def read_graph():
         input = '%s/../graph/%s_adj.npy' % (c, args.input_name)
         G = nx.from_numpy_matrix(np.load(input))
 
+    elif args.input_type == "txt":
+        assert (not args.weighted)
+        input = '%s/../graph/%s_adj.txt' % (c, args.input_name)
+        with open(input, "rb") as g:
+            G = nx.read_adjlist(g)
+            for edge in G.edges():
+                G[edge[0]][edge[1]]['weight'] = 1
 
     if not args.directed:
         G = G.to_undirected()
