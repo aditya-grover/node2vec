@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import networkx as nx
 import random
@@ -28,7 +30,7 @@ class Graph():
 					walk.append(cur_nbrs[alias_draw(alias_nodes[cur][0], alias_nodes[cur][1])])
 				else:
 					prev = walk[-2]
-					next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0], 
+					next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0],
 						alias_edges[(prev, cur)][1])]
 					walk.append(next)
 			else:
@@ -43,9 +45,9 @@ class Graph():
 		G = self.G
 		walks = []
 		nodes = list(G.nodes())
-		print 'Walk iteration:'
+		print('Walk iteration:')
 		for walk_iter in range(num_walks):
-			print str(walk_iter+1), '/', str(num_walks)
+			print(str(walk_iter+1), '/', str(num_walks))
 			random.shuffle(nodes)
 			for node in nodes:
 				walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
