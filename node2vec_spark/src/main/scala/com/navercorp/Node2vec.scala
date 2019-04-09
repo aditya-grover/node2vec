@@ -65,13 +65,6 @@ object Node2vec extends Serializable {
     val bcQ = context.broadcast(config.q)
     
     graph = Graph(indexedNodes, indexedEdges)
-            .mapVertices[NodeAttr] { case (vertexId, clickNode) =>
-              val (j, q) = GraphOps.setupAlias(clickNode.neighbors)
-              val nextNodeIndex = GraphOps.drawAlias(j, q)
-              clickNode.path = Array(vertexId, clickNode.neighbors(nextNodeIndex)._1)
-              
-              clickNode
-            }
             .mapTriplets { edgeTriplet: EdgeTriplet[NodeAttr, EdgeAttr] =>
               val (j, q) = GraphOps.setupEdgeAlias(bcP.value, bcQ.value)(edgeTriplet.srcId, edgeTriplet.srcAttr.neighbors, edgeTriplet.dstAttr.neighbors)
               edgeTriplet.attr.J = j
@@ -91,6 +84,14 @@ object Node2vec extends Serializable {
     edge2attr.first
     
     for (iter <- 0 until config.numWalks) {
+      graph = graph.mapVertices[NodeAttr] {
+        case (vertexId, clickNode) =>
+          val (j, q) = GraphOps.setupAlias(clickNode.neighbors)
+          val nextNodeIndex = GraphOps.drawAlias(j, q)
+          clickNode.path = Array(vertexId, clickNode.neighbors(nextNodeIndex)._1)
+
+          clickNode
+      }
       var prevWalk: RDD[(Long, ArrayBuffer[Long])] = null
       var randomWalk = graph.vertices.map { case (nodeId, clickNode) =>
         val pathBuffer = new ArrayBuffer[Long]()
