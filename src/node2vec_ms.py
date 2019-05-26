@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import random
+from collections import deque
 
 
 class Graph():
@@ -10,31 +11,55 @@ class Graph():
         self.p = p
         self.q = q
 
-    def node2vec_walk(self, walk_length, start_node):
+    def draw_node(self, node, count, node_neighbors):
+        result = {}
+        for i in xrange(count):
+            next = node_neighbors[alias_draw(self.alias_nodes[node][0], self.alias_nodes[node][1])]
+            result[next] = result.get(next, 0) + 1
+        return result
+
+    def draw_edge(self, prev, node, count, node_neighbors):
+        result = {}
+        for i in xrange(count):
+            next = node_neighbors[alias_draw(self.alias_edges[(prev, node)][0], self.alias_edges[(prev, node)][1])]
+            result[next] = result.get(next, 0) + 1
+        return result
+
+    def node2vec_walk(self, walk_length, start_node, num_walks):
         '''
         Simulate a random walk starting from start node.
         '''
         G = self.G
-        alias_nodes = self.alias_nodes
-        alias_edges = self.alias_edges
-
-        walk = [start_node]
-
-        while len(walk) < walk_length:
-            cur = walk[-1]
+        walks = []
+        queue = deque()
+        queue.append([[start_node] for _ in xrange(num_walks)])
+        while queue:
+            cur_list = queue.pop()
+            cur_walk = cur_list[0]
+            cur = cur_walk[-1]
             cur_nbrs = sorted(G.neighbors(cur))
             if len(cur_nbrs) > 0:
-                if len(walk) == 1:
-                    walk.append(cur_nbrs[alias_draw(alias_nodes[cur][0], alias_nodes[cur][1])])
-                else:
-                    prev = walk[-2]
-                    next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0],
-                                               alias_edges[(prev, cur)][1])]
-                    walk.append(next)
-            else:
-                break
+                if len(cur_walk) == 1:
+                    drawn = self.draw_node(cur, len(cur_list), cur_nbrs)
+                    for k, v in drawn.iteritems():
+                        updated_walks = [cur_walk + [k] for _ in xrange(v)]
+                        if len(updated_walks[0]) == walk_length:
+                            walks += updated_walks
+                        else:
+                            queue.append(updated_walks)
 
-        return walk
+                else:
+                    drawn = self.draw_edge(cur_walk[-2], cur, len(cur_list), cur_nbrs)
+                    for k, v in drawn.iteritems():
+                        updated_walks = [cur_walk + [k] for _ in xrange(v)]
+                        if len(updated_walks[0]) == walk_length:
+                            walks += updated_walks
+                        else:
+                            queue.append(updated_walks)
+            else:
+                print("HANDLE NODE WITH NO NEIGHBORS")
+
+        return walks
 
     def simulate_walks(self, num_walks, walk_length):
         '''
@@ -43,12 +68,12 @@ class Graph():
         G = self.G
         walks = []
         nodes = list(G.nodes())
-        print 'Walk iteration:'
-        for walk_iter in range(num_walks):
-            print str(walk_iter + 1), '/', str(num_walks)
-            random.shuffle(nodes)
-            for node in nodes:
-                walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
+        # print 'Walk iteration:'
+        # for walk_iter in range(num_walks):
+        #     print str(walk_iter + 1), '/', str(num_walks)
+        random.shuffle(nodes)
+        for node in nodes:
+            walks += self.node2vec_walk(walk_length=walk_length, start_node=node, num_walks=num_walks)
 
         return walks
 
@@ -148,7 +173,6 @@ def alias_draw(J, q):
         return kk
     else:
         return J[kk]
-
 
 # print alias_setup([0.0164012 , 0.03986905, 0.07207824, 0.07763892, 0.06469869,
 #        0.09192082, 0.05299032, 0.04480718, 0.00845884, 0.08852418,
