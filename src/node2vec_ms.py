@@ -2,6 +2,7 @@ import numpy as np
 import networkx as nx
 import random
 from collections import deque
+import random
 
 
 class Graph():
@@ -11,54 +12,84 @@ class Graph():
         self.p = p
         self.q = q
 
-    def draw_node(self, node, count, node_neighbors):
+    def draw_node(self, node, next_steps_len, node_neighbors):
         result = {}
-        for i in xrange(count):
-            next = node_neighbors[alias_draw(self.alias_nodes[node][0], self.alias_nodes[node][1])]
-            result[next] = result.get(next, 0) + 1
+        for k, v in next_steps_len.iteritems():
+            result[k] = {}
+            for i in xrange(v):
+                next = node_neighbors[alias_draw(self.alias_nodes[node][0], self.alias_nodes[node][1])]
+                result[k][next] = result[k].get(next, 0) + 1
         return result
 
-    def draw_edge(self, prev, node, count, node_neighbors):
+    def draw_edge(self, node, next_steps_len, node_neighbors):
         result = {}
-        for i in xrange(count):
-            next = node_neighbors[alias_draw(self.alias_edges[(prev, node)][0], self.alias_edges[(prev, node)][1])]
-            result[next] = result.get(next, 0) + 1
+        for k, v in next_steps_len.iteritems():
+            result[k] = {}
+            for i in xrange(v):
+                next = node_neighbors[alias_draw(self.alias_edges[(k, node)][0], self.alias_edges[(k, node)][1])]
+                result[k][next] = result[k].get(next, 0) + 1
         return result
 
-    def node2vec_walk(self, walk_length, start_node, num_walks):
+    def update_step(self, drawn, drop_set, walk_length, walks, visit):
+        for walk_list in drop_set:
+            prev = self.get_prev(walk_list[0])
+            updated_walks = []
+            for walk_tuple in walk_list:
+                next_step = random.choice(drawn[prev].keys())
+                updated_walks.append((walk_tuple[0] + (next_step,), walk_tuple[1]))
+                drawn[prev][next_step] = drawn[prev][next_step] - 1
+                if not drawn[prev][next_step]:
+                    del drawn[prev][next_step]
+            if len(updated_walks[0][0]) == walk_length:
+                walks += [list(updated_walks[0][0]) for _ in xrange(len(updated_walks))]
+            else:
+                visit.add(tuple(updated_walks))
+
+    def get_prev(self, walk):
+        return walk[0][-2] if len(walk[0]) > 1 else -1
+
+    def node2vec_walk(self, walk_length, start_nodes, num_walks):
         '''
         Simulate a random walk starting from start node.
         '''
         G = self.G
         walks = []
-        queue = deque()
-        queue.append([[start_node] for _ in xrange(num_walks)])
-        while queue:
-            cur_list = queue.pop()
-            cur_walk = cur_list[0]
-            cur = cur_walk[-1]
-            cur_nbrs = sorted(G.neighbors(cur))
-            if len(cur_nbrs) > 0:
-                if len(cur_walk) == 1:
-                    drawn = self.draw_node(cur, len(cur_list), cur_nbrs)
-                    for k, v in drawn.iteritems():
-                        updated_walks = [cur_walk + [k] for _ in xrange(v)]
-                        if len(updated_walks[0]) == walk_length:
-                            walks += updated_walks
-                        else:
-                            queue.append(updated_walks)
-
+        visit = set()
+        visitNext = set()
+        for i, start_node in enumerate(start_nodes):
+            visit.add(tuple(((start_node,), i) for _ in xrange(num_walks)))
+        while visit:
+            while visit:
+                cur_list = visit.pop()  # Tuple containing all identical walks
+                cur_walk = cur_list[0]  # Single walk to act as a representative of whole progress so far
+                cur_id = cur_walk[1]  # Id of the random walk
+                cur = cur_walk[0][-1]  # The last node of the currently considered walk
+                drop_set = set()
+                drop_set.add(cur_list)  # Walks that should be removed from visit as they are processed now
+                # dict with number of steps and previous node (if it's not the first iteration) per walk id
+                # next_steps_len = {cur_id: (len(cur_list), cur_walk[0][-2] if len(cur_walk[0]) > 1 else -1)}
+                next_steps_len = {self.get_prev(cur_walk): len(cur_list)}
+                for walk_list in visit:
+                    cur_walk_overlap = walk_list[0]
+                    if cur_walk_overlap[0][-1] == cur:
+                        drop_set.add(walk_list)
+                        next_steps_len[self.get_prev(cur_walk_overlap)] = next_steps_len.get(
+                            self.get_prev(cur_walk_overlap), 0) + len(walk_list)
+                        # next_steps_len[walk_list[0][1]] = (
+                        #     len(walk_list), cur_walk_overlap[0][-2] if len(cur_walk[0]) > 1 else -1)
+                cur_nbrs = sorted(G.neighbors(cur))
+                if len(cur_nbrs) > 0:
+                    if len(cur_walk[0]) == 1:
+                        drawn = self.draw_node(cur, next_steps_len, cur_nbrs)
+                        self.update_step(drawn, drop_set, walk_length, walks, visitNext)
+                    else:
+                        drawn = self.draw_edge(cur, next_steps_len, cur_nbrs)
+                        self.update_step(drawn, drop_set, walk_length, walks, visitNext)
                 else:
-                    drawn = self.draw_edge(cur_walk[-2], cur, len(cur_list), cur_nbrs)
-                    for k, v in drawn.iteritems():
-                        updated_walks = [cur_walk + [k] for _ in xrange(v)]
-                        if len(updated_walks[0]) == walk_length:
-                            walks += updated_walks
-                        else:
-                            queue.append(updated_walks)
-            else:
-                print("HANDLE NODE WITH NO NEIGHBORS")
+                    print("HANDLE NODE WITH NO NEIGHBORS")  # Probably just continue
 
+                visit.difference_update(drop_set)
+            visit, visitNext = visitNext, visit
         return walks
 
     def simulate_walks(self, num_walks, walk_length):
@@ -73,7 +104,7 @@ class Graph():
         #     print str(walk_iter + 1), '/', str(num_walks)
         random.shuffle(nodes)
         for node in nodes:
-            walks += self.node2vec_walk(walk_length=walk_length, start_node=node, num_walks=num_walks)
+            walks += self.node2vec_walk(walk_length=walk_length, start_nodes=[node], num_walks=num_walks)
 
         return walks
 
@@ -173,14 +204,3 @@ def alias_draw(J, q):
         return kk
     else:
         return J[kk]
-
-# print alias_setup([0.0164012 , 0.03986905, 0.07207824, 0.07763892, 0.06469869,
-#        0.09192082, 0.05299032, 0.04480718, 0.00845884, 0.08852418,
-#        0.00242594, 0.02412631, 0.11474021, 0.01500069, 0.0513678 ,
-#        0.03225817, 0.04515068, 0.04732195, 0.02723862, 0.08298219])
-# print alias_setup([0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.55])
-# (array([ 3,  3,  0,  2,  3,  4,  5,  3,  5,  6,  9, 12,  9, 12, 12, 19, 19,
-#        19, 19, 14]), array([ 0.328024 ,  0.797381 ,  1.       ,  0.5584352,  0.9841082,
-#         0.6901344,  0.6825412,  0.8961436,  0.1691768,  0.6227348,
-#         0.0485188,  0.4825262,  0.8037324,  0.3000138,  0.7263882,
-#         0.6451634,  0.9030136,  0.946439 ,  0.5447724,  0.6990322]))
