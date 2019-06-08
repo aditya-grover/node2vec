@@ -8,7 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from sklearn import mixture
 from sklearn import cluster
-from .utils import get_as_numpy_array
+from utils import get_as_numpy_array
 
 G = nx.Graph()
 
@@ -52,16 +52,16 @@ with open('../graph/lesmis.edgelist') as graph_file:
 
 d = nx.degree(G)
 
-X = get_as_numpy_array('../emb/lesmis.emb')
+X = get_as_numpy_array('../emb/lesmis1.emb')
 
 gmm = mixture.BayesianGaussianMixture(n_components=6, covariance_type='full').fit(X)
-kmeans = cluster.KMeans(n_clusters=3, random_state=0).fit(X)
+kmeans = cluster.KMeans(n_clusters=6, random_state=0).fit(X)
 print(kmeans.labels_)
 # prediction = gmm.predict(X)
 prediction = kmeans.labels_
 # plot_results(X, prediction, gmm.means_, gmm.covariances_, 1,
 #              'Bayesian Gaussian Mixture with a Dirichlet process prior')
 
-nx.draw(G, node_size=[v * 10 for v in list(d.values())],
+nx.draw(G, node_size=d,
         node_color=prediction)
-plt.show()
+plt.show(dpi=1500)

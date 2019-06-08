@@ -1,3 +1,5 @@
 networkx
 numpy
 gensim
+scikit-learn
+matplotlib

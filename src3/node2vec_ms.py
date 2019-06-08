@@ -1,8 +1,6 @@
 import numpy as np
-import networkx as nx
 import random
-from collections import deque
-import random
+from itertools import islice, chain
 
 
 class Graph():
@@ -11,6 +9,16 @@ class Graph():
         self.is_directed = is_directed
         self.p = p
         self.q = q
+
+    def chunker(self, iterable, n):
+        it = iter(iterable)
+        while True:
+            chunk = islice(it, n)
+            try:
+                first = next(chunk)
+            except StopIteration:
+                return
+            yield chain((first,), chunk)
 
     def draw_node(self, node, next_steps_len, node_neighbors):
         result = {}
@@ -41,7 +49,7 @@ class Graph():
                 if not drawn[prev][next_step]:
                     del drawn[prev][next_step]
             if len(updated_walks[0][0]) == walk_length:
-                walks += [list(updated_walks[0][0]) for _ in range(len(updated_walks))]
+                walks += [list(w[0]) for w in updated_walks]
             else:
                 visit.add(tuple(updated_walks))
 
@@ -103,8 +111,9 @@ class Graph():
         # for walk_iter in range(num_walks):
         #     print str(walk_iter + 1), '/', str(num_walks)
         random.shuffle(nodes)
-        for node in nodes:
-            walks += self.node2vec_walk(walk_length=walk_length, start_nodes=[node], num_walks=num_walks)
+        # for node in nodes:
+        for node_chunk in self.chunker(nodes, 1):
+            walks += self.node2vec_walk(walk_length=walk_length, start_nodes=list(node_chunk), num_walks=num_walks)
 
         return walks
 
