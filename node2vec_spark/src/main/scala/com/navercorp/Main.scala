@@ -36,6 +36,9 @@ object Main {
     opt[Int]("walkLength")
             .text(s"walkLength: ${defaultParams.walkLength}")
             .action((x, c) => c.copy(walkLength = x))
+    opt[Int]("dim")
+            .text(s"dim: ${defaultParams.dim}")
+            .action((x, c) => c.copy(dim = x))
     opt[Int]("numWalks")
             .text(s"numWalks: ${defaultParams.numWalks}")
             .action((x, c) => c.copy(numWalks = x))
@@ -93,7 +96,7 @@ object Main {
     parser.parse(args, defaultParams).map { param =>
       val conf = new SparkConf().setAppName("Node2Vec")
       val context: SparkContext = new SparkContext(conf)
-      
+
       Node2vec.setup(context, param)
       
       param.cmd match {
