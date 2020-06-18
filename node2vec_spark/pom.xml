@@ -17,7 +17,7 @@
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
         <java.version>1.7</java.version>
-        <scala.binary.version>2.10</scala.binary.version>
+        <scala.binary.version>2.11</scala.binary.version>
     </properties>
 
     <build>
