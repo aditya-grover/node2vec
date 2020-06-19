@@ -124,6 +124,15 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>neo4j-contrib</groupId>
+            <artifactId>neo4j-spark-connector</artifactId>
+            <version>2.4.5-M1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/neo4j-spark-connector-full-2.4.5-M1.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
 </project>

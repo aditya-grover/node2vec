@@ -8,7 +8,7 @@ import com.navercorp.lib.AbstractParams
 object Main {
   object Command extends Enumeration {
     type Command = Value
-    val node2vec, randomwalk, embedding = Value
+    val node2vec, randomwalk, embedding, neo2vec = Value
   }
   import Command._
 
@@ -26,6 +26,7 @@ object Main {
                     degree: Int = 30,
                     indexed: Boolean = true,
                     nodePath: String = null,
+                    neoQuery: String = "MATCH (a)-[r]->(b) RETURN id(a) as source, id(b) as target, 1.0 as value",
                     input: String = null,
                     output: String = null,
                     cmd: Command = Command.node2vec) extends AbstractParams[Params] with Serializable
@@ -63,6 +64,9 @@ object Main {
     opt[String]("nodePath")
             .text("Input node2index file path: empty")
             .action((x, c) => c.copy(nodePath = x))
+    opt[String]("neoQuery")
+            .text("Query for fetching graph from Neo4j")
+            .action((x, c) => c.copy(neoQuery = x))
     opt[String]("input")
             .required()
             .text("Input edge file path: empty")
@@ -108,7 +112,11 @@ object Main {
         case Command.randomwalk => Node2vec.load()
                                            .initTransitionProb()
                                            .randomWalk()
-                                           .saveRandomPath()
+        case Command.neo2vec => Node2vec.loadNeo()
+                                           .initTransitionProb()
+                                           .randomWalk()
+                                           .embedding()
+                                           .save()
         case Command.embedding => {
           val randomPaths = Word2vec.setup(context, param).read(param.input)
           Word2vec.fit(randomPaths).save(param.output)
