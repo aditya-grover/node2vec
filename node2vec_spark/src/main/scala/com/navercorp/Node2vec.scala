@@ -10,6 +10,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{EdgeTriplet, Graph, _}
 import com.navercorp.graph.{GraphOps, EdgeAttr, NodeAttr}
 
+import org.neo4j.spark._
+import org.apache.spark.graphx._
+import org.apache.spark.graphx.lib._
+
 object Node2vec extends Serializable {
   lazy val logger: Logger = LoggerFactory.getLogger(getClass.getName);
   
@@ -28,6 +32,45 @@ object Node2vec extends Serializable {
     this
   }
   
+    def loadNeo(): this.type = {
+
+        val neo = Neo4j(context)
+
+        val graphQuery = config.neoQuery
+
+        println("Using graph query: %s".format(graphQuery))
+
+        val graph: Graph[Long, Double] = neo.rels(graphQuery).partitions(10).batch(200).loadGraph
+
+        val bcMaxDegree = context.broadcast(config.degree)
+        val bcEdgeCreator = config.directed match {
+            case true => context.broadcast(GraphOps.createDirectedEdge)
+            case false => context.broadcast(GraphOps.createUndirectedEdge)
+        }
+
+        val inputTriplets = graph.edges
+
+        // TODO optimize by removing the graph recomposition redundancy 
+        indexedNodes = inputTriplets.flatMap { e =>
+            bcEdgeCreator.value.apply(e.srcId, e.dstId, e.attr)
+        }.reduceByKey(_++_).map { case (nodeId, neighbors: Array[(VertexId, Double)]) =>
+            var neighbors_ = neighbors
+                if (neighbors_.length > bcMaxDegree.value) {
+                    neighbors_ = neighbors.sortWith{ case (left, right) => left._2 > right._2 }.slice(0, bcMaxDegree.value)
+                }
+
+            (nodeId, NodeAttr(neighbors = neighbors_.distinct))
+        }.repartition(200).cache
+
+        indexedEdges = indexedNodes.flatMap { case (srcId, clickNode) =>
+            clickNode.neighbors.map { case (dstId, weight) =>
+                Edge(srcId, dstId, EdgeAttr())
+            }
+        }.repartition(200).cache
+
+        this
+  }
+
   def load(): this.type = {
     val bcMaxDegree = context.broadcast(config.degree)
     val bcEdgeCreator = config.directed match {
