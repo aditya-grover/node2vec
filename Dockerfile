@@ -39,7 +39,7 @@ RUN pip install future
 RUN pip install decorator==3.4.0
 RUN pip install networkx==1.11
 RUN pip install numpy==1.11.2
-RUN pip install scipy==0.7.0
+RUN pip install scipy==0.8.0
 RUN pip install six==1.5.0
 RUN pip install smart_open==1.2.1
 RUN pip install gensim==0.13.3
