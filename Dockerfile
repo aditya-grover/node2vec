@@ -33,7 +33,7 @@ RUN pip install ez_setup
 RUN easy_install -U setuptools
 
 # Running into error installing from requirements directly.
-# This works
+# This work:
 RUN pip install future
 RUN pip install decorator==3.4.0
 RUN pip install networkx==1.11
