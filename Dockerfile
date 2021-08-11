@@ -32,14 +32,22 @@ RUN apt install -y python-pip
 RUN pip install ez_setup
 RUN easy_install -U setuptools
 
-# Running into error installing from requirements directly.
-# This work:
+# Running into error installing directly from requirements,
+# due to version and python2.7 clashes.
+# Below requirements works -- has to be in this order:
 RUN pip install future
 RUN pip install decorator==3.4.0
 RUN pip install networkx==1.11
 RUN pip install numpy==1.11.2
-RUN pip install scipy==0.8.0
+RUN pip install scipy==0.7.0
+RUN pip install six==1.5.0
+RUN pip install smart_open==1.2.1
 RUN pip install gensim==0.13.3
+
+# Remove a line from gensim/summarization/pagerank_weighted.py to work,
+# this breaks gensim for pagerank_weighted applications.
+# But to use Word2Vec it should be fine.
+RUN sed -i '7d' /usr/local/lib/python2.7/dist-packages/gensim/summarization/pagerank_weighted.py
 
 # commented out for now, for testing purpose we are only mounting it
 # Set work directory
