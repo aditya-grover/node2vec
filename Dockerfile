@@ -1,11 +1,11 @@
-# Python base image
+# Ubuntu base image
 FROM ubuntu:16.04
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN apt-get update
 
-# setup and compile tools
+# Install setup and compile tools for python builds
 RUN apt install -y build-essential
 RUN apt install -y libssl-dev
 RUN apt install -y zlib1g-dev
@@ -28,13 +28,13 @@ RUN apt install -y gfortran
 RUN apt install -y python
 RUN apt install -y python-pip
 
-# Install dependencies-- has to be in this order
+# Install dependencies-- needs to be installed in this order
 RUN pip install ez_setup
 RUN easy_install -U setuptools
 
-# Running into error installing directly from requirements,
-# due to version and python2.7 clashes.
-# Below requirements works -- has to be in this order:
+# Running into error installing directly from requirements.txt,
+# This is due to package version and python2.7 clashes.
+# Below requirements works-- needs to be installed in this order
 RUN pip install future
 RUN pip install decorator==3.4.0
 RUN pip install networkx==1.11
@@ -44,14 +44,14 @@ RUN pip install six==1.5.0
 RUN pip install smart_open==1.2.1
 RUN pip install gensim==0.13.3
 
-# Remove a line from gensim/summarization/pagerank_weighted.py to work,
-# this breaks gensim for pagerank_weighted applications.
-# But to use Word2Vec it should be fine.
+# To load gensim without error, remove line 7 from gensim/summarization/pagerank_weighted.py
+# Caution: This breaks gensim for pagerank_weighted applications.
+# But to use Word2Vec and to run node2vec code it should be fine.
 RUN sed -i '7d' /usr/local/lib/python2.7/dist-packages/gensim/summarization/pagerank_weighted.py
 
-# commented out for now, for testing purpose we are only mounting it
+# If commented out: Mounting node2vec project directory onto the container
 # Set work directory
-# WORKDIR /usr/src/app
+# #WORKDIR /usr/src/app
 
 # Copy project
-# COPY . /usr/src/app
+# #COPY . /usr/src/app

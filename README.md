@@ -6,7 +6,25 @@ This repository provides a reference implementation of *node2vec* as described i
 > Knowledge Discovery and Data Mining, 2016.<br>
 > <Insert paper link>
 
-The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the [project page](https://snap.stanford.edu/node2vec/) for more details. 
+The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the [project page](https://snap.stanford.edu/node2vec/) for more details.
+
+### Running in Docker
+```Bash
+docker build -t node2vec:latest .
+```
+
+#### Example
+```Bash
+docker run --rm -v ${PWD}:/node2vec\
+                     -i -t node2vec:latest /bin/bash\
+                     -c "cd /node2vec;\
+                         python src/main.py --input graph/karate.edgelist\
+                                            --output emb/karate.emd \
+                                            --dimensions 128\
+                                            --p 0.9\
+                                            --q 0.1;\
+                         exit"
+```
 
 ### Basic Usage
 
@@ -22,17 +40,17 @@ You can check out the other options available to use with *node2vec* using:<br/>
 The supported input format is an edgelist:
 
 	node1_id_int node2_id_int <weight_float, optional>
-		
+
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags.
 
 #### Output
-The output file has *n+1* lines for a graph with *n* vertices. 
+The output file has *n+1* lines for a graph with *n* vertices.
 The first line has the following format:
 
 	num_of_nodes dim_of_representation
 
 The next *n* lines are as follows:
-	
+
 	node_id dim1 dim2 ... dimd
 
 where dim1, ... , dimd is the *d*-dimensional representation learned by *node2vec*.
