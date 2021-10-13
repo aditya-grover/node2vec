@@ -3,6 +3,18 @@ import os
 import networkx as nx
 import numpy as np
 
+HOMOPHILY = False
+
+if HOMOPHILY:
+    fname = 'emb/les_miserables_p_1_q_0.5.emb'
+    n_clusters = 6
+    plot_suffix = "homophily"
+else:
+    fname = 'emb/les_miserables_p_1_q_2.emb'
+    n_clusters = 3
+    plot_suffix = "str_eq"
+
+
 os.chdir(f"c:/Users/dmitr/Documents/git/node2vec")
 
 def save_fig(filename, h, w, dpi):
@@ -17,7 +29,10 @@ list(G().edges)
 G()["Javert"]
 
 d = dict(G().degree)
-node_size = [v * 100 for v in d.values()]
+# node_size = [v * 100 for v in d.values()]
+# Discretize node degrees
+step = int(max(d.values()) / 5)
+node_size = [int(e / step + 1) * 200 + 150 for e in d.values()]
 
 subax1 = plt.subplot()
 
@@ -40,7 +55,7 @@ nx.readwrite.edgelist.write_edgelist(G = G_int, path = "graph/les_miserables.edg
 python src/main.py --input graph/les_miserables.edgelist --output emb/les_miserables_p_1_q_05.emb --dimensions 16 --p 1 --q 0.5
 """
 
-with open('emb/les_miserables_p_1_q_05.emb') as f:
+with open(fname) as f:
     # ignore the first line.
     emb = f.read().splitlines()[1:]
 
@@ -51,9 +66,14 @@ emb = {e[0]: [float(ee) for ee in e[1:]] for e in emb}
 
 emb_lst = list(emb.values())
 
+
+# Clustering
+
 from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=6, random_state=0).fit(emb_lst)
+kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(emb_lst)
 kmeans.labels_
+
+
 
 # Plot the original graph with colours according to the clusters.
 
@@ -70,7 +90,7 @@ for i in range(G().number_of_nodes()):
     color_map.append(cmap(cluster))
  
 nx.draw(G(), node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
-save_fig("images/les_miserables_draw_kmeans.png", h = 10, w = 20, dpi = 200)
+save_fig(f"images/les_miserables_draw_kmeans_{plot_suffix}.png", h = 10, w = 20, dpi = 200)
 plt.show()
 
 # nx.draw_circular(G(), node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
