@@ -52,7 +52,9 @@ nx.readwrite.edgelist.write_edgelist(G = G_int, path = "graph/les_miserables.edg
 # RUN THE NODE2VEC SCRIPT
 
 """
-python src/main.py --input graph/les_miserables.edgelist --output emb/les_miserables_p_1_q_05.emb --dimensions 16 --p 1 --q 0.5
+python src/main.py --input graph/les_miserables.edgelist --output emb/les_miserables_p_1_q_0.5.emb --dimensions 16 --p 1 --q 0.5
+or
+python src/main.py --input graph/les_miserables.edgelist --output emb/les_miserables_p_1_q_2.emb --dimensions 16 --p 1 --q 2
 """
 
 with open(fname) as f:
@@ -77,7 +79,7 @@ kmeans.labels_
 
 # Plot the original graph with colours according to the clusters.
 
-node_names = list(G.nodes())
+node_names = list(G.nodes()) # <-- problem?
 node_keys = list(emb.keys())
 node_clusters = kmeans.labels_
 
@@ -85,9 +87,10 @@ from matplotlib import cm
 cmap = cm.get_cmap('Set1', 6)
 
 color_map = []
-for i in range(G.number_of_nodes()):
-    cluster = node_clusters[i]
-    color_map.append(cmap(cluster))
+for node_name in node_names:
+    name_index = node_keys.index(node_name)
+    cluster = node_clusters[name_index] # <-- problem?
+    color_map.append(cmap(cluster)) # <-- problem?
  
 nx.draw(G, node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
 save_fig(f"images/les_miserables_draw_kmeans_{plot_suffix}.png", h = 10, w = 20, dpi = 200)

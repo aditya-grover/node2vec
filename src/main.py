@@ -77,7 +77,7 @@ def read_graph():
 	if not args.directed:
 		G = G.to_undirected()
 
-	return G
+	return nx.generators.social.les_miserables_graph()
 
 def learn_embeddings(walks):
 	'''
