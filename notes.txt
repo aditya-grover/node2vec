@@ -1,0 +1,20 @@
+https://link.springer.com/chapter/10.1007/978-3-030-45442-5_8
+"Even with grid-search over these and further parameters (l, n and w), no result close to the original could be produced. The graph never represented structural equivalence, but community structure as well (with 3 instead of 6 clusters), as shown in Fig. 1b."
+https://github.com/Kombustor/submission-ecir2020-randomwalks/tree/submission/data
+
+
+
+
+BlogCatalog3: http://datasets.syr.edu/datasets/BlogCatalog3.html
+or https://figshare.com/articles/dataset/BlogCatalog_dataset/11923611
+
+Ask Matteo for a graph data
+
+BioNEV
+https://github.com/xiangyue9607/BioNEV
+"Graph Embedding on Biomedical Networks: Methods, Applications, and Evaluations"
+https://arxiv.org/ftp/arxiv/papers/1906/1906.05017.pdf
+or https://academic.oup.com/bioinformatics/article/36/4/1241/5581350
+
+
+
