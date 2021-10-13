@@ -22,13 +22,13 @@ def save_fig(filename, h, w, dpi):
     figure.set_size_inches(w, h)
     plt.savefig(filename, dpi=dpi)
     
-G = nx.generators.social.les_miserables_graph
-G().number_of_nodes()
-G().number_of_edges()
-list(G().edges)
-G()["Javert"]
+G = nx.generators.social.les_miserables_graph()
+G.number_of_nodes()
+G.number_of_edges()
+list(G.edges)
+G["Javert"]
 
-d = dict(G().degree)
+d = dict(G.degree)
 # node_size = [v * 100 for v in d.values()]
 # Discretize node degrees
 step = int(max(d.values()) / 5)
@@ -36,16 +36,16 @@ node_size = [int(e / step + 1) * 200 + 150 for e in d.values()]
 
 subax1 = plt.subplot()
 
-nx.draw(G(), with_labels=True, node_size=node_size, font_weight='bold')
+nx.draw(G, with_labels=True, node_size=node_size, font_weight='bold')
 save_fig("images/les_miserables_draw.png", h = 10, w = 20, dpi = 200)
 plt.show()
 
-# nx.draw_circular(G(), with_labels=True, node_size=node_size, font_weight='bold')
+# nx.draw_circular(G, with_labels=True, node_size=node_size, font_weight='bold')
 # save_fig("images/les_miserables_draw_circular.png", h = 10, w = 20, dpi = 200)
 # plt.show()
 
 
-G_int = nx.convert_node_labels_to_integers(G(), first_label=0)
+G_int = nx.convert_node_labels_to_integers(G, first_label=0)
 
 nx.readwrite.edgelist.write_edgelist(G = G_int, path = "graph/les_miserables.edgelist", data = False)
 
@@ -77,7 +77,7 @@ kmeans.labels_
 
 # Plot the original graph with colours according to the clusters.
 
-node_names = list(G().nodes())
+node_names = list(G.nodes())
 node_keys = list(emb.keys())
 node_clusters = kmeans.labels_
 
@@ -85,15 +85,15 @@ from matplotlib import cm
 cmap = cm.get_cmap('Set1', 6)
 
 color_map = []
-for i in range(G().number_of_nodes()):
+for i in range(G.number_of_nodes()):
     cluster = node_clusters[i]
     color_map.append(cmap(cluster))
  
-nx.draw(G(), node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
+nx.draw(G, node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
 save_fig(f"images/les_miserables_draw_kmeans_{plot_suffix}.png", h = 10, w = 20, dpi = 200)
 plt.show()
 
-# nx.draw_circular(G(), node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
+# nx.draw_circular(G, node_color=color_map, with_labels=True, node_size=node_size, font_weight='bold')
 # save_fig("images/les_miserables_draw_circular_kmeans.png", h = 10, w = 20, dpi = 200)
 # plt.show()
 
