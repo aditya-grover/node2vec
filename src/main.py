@@ -77,7 +77,7 @@ def read_graph():
 	if not args.directed:
 		G = G.to_undirected()
 
-	return nx.generators.social.les_miserables_graph()
+	return G # nx.generators.social.les_miserables_graph()
 
 def learn_embeddings(walks):
 	'''
@@ -91,15 +91,15 @@ def learn_embeddings(walks):
 	return
 
 def main(args):
-	'''
-	Pipeline for representational learning for all nodes in a graph.
-	'''
-	nx_G = read_graph()
-	G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
-	G.preprocess_transition_probs()
-	walks = G.simulate_walks(args.num_walks, args.walk_length)
-	learn_embeddings(walks)
+    '''
+    Pipeline for representational learning for all nodes in a graph.
+    '''
+    nx_G = read_graph()
+    G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
+    G.preprocess_transition_probs()
+    walks = G.simulate_walks(args.num_walks, args.walk_length)
+    learn_embeddings(walks)
 
 if __name__ == "__main__":
-	args = parse_args()
-	main(args)
+    args = parse_args()
+    main(args)
