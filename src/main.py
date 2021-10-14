@@ -17,7 +17,7 @@ import random
 from gensim.models import Word2Vec
 
 # to reproduce the graph subset
-NODE_SHUFFLE_SEED = 1
+NODE_SHUFFLE_SEED = 2
 
 def parse_args():
     '''
