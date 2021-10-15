@@ -1,3 +1,6 @@
+This is a fork from [aditya-grover/node2vec](https://github.com/aditya-grover/node2vec).
+
+Additional sections has been added [here](#Changes)
 # node2vec
 
 This repository provides a reference implementation of *node2vec* as described in the paper:<br>
@@ -53,3 +56,10 @@ If you find *node2vec* useful for your research, please consider citing the foll
 Please send any questions you might have about the code and/or the algorithm to <adityag@cs.stanford.edu>.
 
 *Note:* This is only a reference implementation of the *node2vec* algorithm and could benefit from several performance enhancement schemes, some of which are discussed in the paper.
+
+# Changes
+
+- Added progress bar to preprocessing task.
+- Changes to use python3 and higher versions of packages.
+- Added multi-classification.ipynb to use the embeddings to do multi-label
+    classification.
