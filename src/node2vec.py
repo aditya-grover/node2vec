@@ -43,9 +43,9 @@ class Graph():
 		G = self.G
 		walks = []
 		nodes = list(G.nodes())
-		print 'Walk iteration:'
+		print('Walk iteration:')
 		for walk_iter in range(num_walks):
-			print str(walk_iter+1), '/', str(num_walks)
+			print(str(walk_iter+1), '/', str(num_walks))
 			random.shuffle(nodes)
 			for node in nodes:
 				walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
@@ -103,7 +103,7 @@ class Graph():
 
 		return
 
-
+# source: https://lips.cs.princeton.edu/the-alias-method-efficient-sampling-with-many-discrete-outcomes/
 def alias_setup(probs):
 	'''
 	Compute utility lists for non-uniform sampling from discrete distributions.

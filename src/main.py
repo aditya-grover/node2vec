@@ -83,22 +83,23 @@ def learn_embeddings(walks):
 	'''
 	Learn embeddings by optimizing the Skipgram objective using SGD.
 	'''
-	walks = [map(str, walk) for walk in walks]
+    # source: https://stackoverflow.com/questions/42836992/gensim-1-0-1-on-python-3-5-typeerror-object-of-type-map-has-no-len
+	walks = [list(map(str, walk)) for walk in walks] # convert each vertex id to a string
 	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
-	model.save_word2vec_format(args.output)
+	model.wv.save_word2vec_format(args.output)
 	
 	return
 
 def main(args):
-	'''
-	Pipeline for representational learning for all nodes in a graph.
-	'''
-	nx_G = read_graph()
-	G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
-	G.preprocess_transition_probs()
-	walks = G.simulate_walks(args.num_walks, args.walk_length)
-	learn_embeddings(walks)
+    '''
+    Pipeline for representational learning for all nodes in a graph.
+    '''
+    nx_G = read_graph()
+    G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
+    G.preprocess_transition_probs()
+    walks = G.simulate_walks(args.num_walks, args.walk_length)
+    learn_embeddings(walks)
 
 if __name__ == "__main__":
-	args = parse_args()
-	main(args)
+    args = parse_args()
+    main(args)
