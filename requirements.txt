@@ -2,3 +2,4 @@ Python 3.7.10
 numpy==1.20.1
 gensim==3.8.3
 networkx==2.6.3
+matplotlib=3.4.3
