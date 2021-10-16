@@ -183,15 +183,17 @@ def train_classifier(train_embeddings_path, train_edges_path):
     train_edges, train_labels = openPkl(train_edges_path)
     oper = 'Avgerage'  # one of four operators [Avgerage, Hadamard, Weighted_L1, Weighted_L2]
     edge_features = EdgeFeatures(oper=oper, nodes=nodes, node_features=train_feature_edges, train_edges=train_edges)
+    print(edge_features)
+    df = pd.DataFrame()
 
     # once edge_features is ready:
     # create a df of edge features for each edge
-    train_df = pd.DataFrame(edge_features, index=train_edges, columns=[f"f{i}" for i in range(len(train_edges[0]))])
-
-    # choose a classifier
-    classifier = LogisticRegression()
-    scores = cross_val_score(classifier, train_df, train_labels, cv=5)
-    print(f"scores: {scores}")
+    #train_df = pd.DataFrame(edge_features, index=train_edges, columns=[f"f{i}" for i in range(len(train_edges[0]))])
+    #
+    # # choose a classifier
+    # classifier = LogisticRegression()
+    # scores = cross_val_score(classifier, train_df, train_labels, cv=5)
+    # print(f"scores: {scores}")
 
     # train it using 5 fold cross-val
 
