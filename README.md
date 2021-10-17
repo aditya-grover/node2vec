@@ -61,5 +61,9 @@ Please send any questions you might have about the code and/or the algorithm to 
 
 - Added progress bar to preprocessing task.
 - Changes to use python3 and higher versions of packages.
-- Added multi-classification.ipynb to use the embeddings to do multi-label
-    classification.
+- Added multi-classification.ipynb to use the embeddings to do label classification. 
+Note: Install jupyter notebook to run the file
+    ```
+    pip install jupyter 
+    jupyter notebook
+    ```
