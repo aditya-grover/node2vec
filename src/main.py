@@ -85,7 +85,7 @@ def learn_embeddings(walks):
 	'''
     # source: https://stackoverflow.com/questions/42836992/gensim-1-0-1-on-python-3-5-typeerror-object-of-type-map-has-no-len
 	walks = [list(map(str, walk)) for walk in walks] # convert each vertex id to a string
-	model = Word2Vec(walks, vector_size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, epochs=args.iter)
+	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
 	model.wv.save_word2vec_format(args.output)
 	
 	return
