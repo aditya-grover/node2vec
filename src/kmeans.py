@@ -4,28 +4,27 @@ import networkx as nx
 from sklearn.cluster import KMeans
 from matplotlib import cm
 
-SWITCH = "str_eq" # homophily, str_eq, struc2vec
+SWITCH = "homophily" # homophily, str_eq, struc2vec
 
 DATA_NAME = "les_miserables" # les_miserables, TerroristRel
 # TerroristRel: https://networkrepository.com/TerroristRel.php
 
-args = {"edgelist_fname": f"graph/{DATA_NAME}.edgelist",
+args = {"edgelist_fname": f"graph/{DATA_NAME}/{DATA_NAME}.edgelist",
+        "edgelist_delim": ",",
         "D": 16, 
         "P": 1,
         "K": 10, # window_size = context size k, default = 10.
         "L": 80 # walk_length = l, default = 80.
         }
 
-def get_data(data_name):
+def get_data():
     """Get data as a networkx graph."""
     
-    if data_name == "les_miserables":
+    if DATA_NAME == "les_miserables":
         return nx.generators.social.les_miserables_graph()
-    elif data_name == "TerroristRel":
-        return nx.readwrite.edgelist.read_edgelist("graph/TerroristRel.edges", 
-                                                   delimiter = ",")
     else:
-        raise Exception("Unknown dataset.")
+        return nx.readwrite.edgelist.read_edgelist(f"graph/{DATA_NAME}/{DATA_NAME}.edges", 
+                                                   delimiter = args["edgelist_delim"])
 
 def set_other_parameters():
     """Set q and the number of clusters as in the original paper,
@@ -48,7 +47,7 @@ def set_other_parameters():
     elif SWITCH == "struc2vec":
         print("Using for structural equivalence with struc2vec...")
         args["n_clusters"] = 4
-        args["emb_fname"] = f"../BioNEV/embeddings/{DATA_NAME}_struc2vec.emb"
+        args["emb_fname"] = f"emb/{DATA_NAME}/{DATA_NAME}_struc2vec.emb"
         args["plot_suffix"] = "str_eq"
         args["params"] = "struc2vec"
         
@@ -62,7 +61,7 @@ def get_emb_fname_for_node2vec():
     """
     
     args["params"] = f"d_{args['D']}_l_{args['L']}_k_{args['K']}_p_{args['P']}_q_{args['Q']}"
-    args["emb_fname"] = f"emb/les_miserables_{args['params']}.emb"
+    args["emb_fname"] = f"emb/{DATA_NAME}/{DATA_NAME}_{args['params']}.emb"
 
 def save_fig(filename, h, w, dpi):
     """Save the plot with specified height, width and dpi parameters."""
@@ -87,7 +86,7 @@ def create_embeddings():
             # https://github.com/xiangyue9607/BioNEV.
         # Run 
             # cd ../BioNEV
-            # bionev --input ../node2vec/graph/les_miserables.edgelist --output ./embeddings/les_miserables_struc2vec.emb --method struc2vec --task link-prediction --walk-length 80 --window-size 10 --dimensions 16
+            # bionev --input ../node2vec/graph/les_miserables.edgelist --output ../node2vec/emb/les_miserables_struc2vec.emb --method struc2vec --task link-prediction --walk-length 80 --window-size 10 --dimensions 16
         pass
     else:
         cmd = "python src/main.py " + \
@@ -163,18 +162,18 @@ def plot_network_with_clusters(emb, kmeans, node_names):
         color_map.append(cmap(cluster))
      
     nx.draw(G, node_color=color_map,
-            with_labels=True, # CHANGE HERE TO ADD LABELS!
+            with_labels = True, # CHANGE HERE TO ADD LABELS!
             alpha = 0.7)
     save_fig(f"images/{DATA_NAME}/{DATA_NAME}_{args['params']}_kmeans_{args['n_clusters']}_clusters_{args['plot_suffix']}.png", 
-             h = 6, 
-             w = 10, 
+             h = 10, 
+             w = 20, 
              dpi = 200)
     plt.show()
 
 
 if __name__ == "__main__":
     set_other_parameters()
-    G = get_data(DATA_NAME)
+    G = get_data()
     plot_original_network(G)
     export_edgelist(G)
     create_embeddings()
