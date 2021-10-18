@@ -4,18 +4,24 @@ A data set containing edges for unweighted graph can be called data.edgelist liv
 The training data will be saved into a file at data/train_edges
 The testing edges will be saved into a file at data/test_edges
 For creating node embeddings, run the main function of node2vec,
-where input should be data/train_edges and path for the embeddings should be data/data.emb
+where input should be data/train_edges and path for the embeddings should be emb/data/data.emb
 """
-
-import copy
-import pickle
+import argparse
 import networkx
-import numpy as np
 import matplotlib.pyplot as plt
 import random
 
 
 # =========================================================
+
+# creating a parser
+parser = argparse.ArgumentParser(description="run data processing to obtain graph training edges and  testing edges.")
+parser.add_argument("--input_path", type=str, required=True, help="path to the original edgelist")
+parser.add_argument("--output_train_path", type=str, required=True, help="save training graph to this path. ")
+parser.add_argument("--output_test_path", type=str, required=True, help="save positive test edges to this path. ")
+parser.add_argument("--testing_data_ratio", type=float, required=True, help="Ratio of edges to be used for testing.")
+
+
 def node2vec_format(path, edges):
     """
     function that stores edges in a file in the format expected by node2vec algorithms.
@@ -45,27 +51,38 @@ def drawGraph(G, figname):
     print(f"Graph created!\n")
 
 
-def createGraph(input_edge_list, figname):
+def createGraph(input_edge_list):
     """
-    From list of nodes and edges create and return a graph.
-    Plus saves a drawing of the graph.
+    From list of edges create and return a graph.
 
-    :param nodes: list of nodes
-    :param edges: list of edges
-    :param figname: figure name
+    :param input_edge_list: list of edges
+    :returns G: the graph
     """
+    # first thing, how are the nodes separated in an edge
+    with open(input_edge_list, 'r') as f:
+        l = f.readline()
+        delimiter = l[1]
+
     print(f"Graph creation started: ")
-    G = networkx.read_edgelist(input_edge_list)
+    G = networkx.read_edgelist(input_edge_list, delimiter=delimiter)
     print(f"----- Original graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
     # only consider the largest connected component
     G = G.subgraph(max(networkx.connected_components(G), key=len)).copy()
     print(f"----- The largest component subgraph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.\n")
-    #drawGraph(G=G, figname=figname)
+
     return G
 
 
-def split_train_test_graph(input_path, output_train_path, output_test_path, figname, testing_data_ratio):
-    G = createGraph(input_path, figname)  # create the original graph
+def split_train_test_graph(input_path, output_train_path, output_test_path, testing_data_ratio):
+    """
+    Function that samples test edges and removes them from original graph
+    to obtain train_graph as well.
+    :param input_path: path to original data
+    :param output_train_path: path to save file with training edges
+    :param output_test_path: path to file with test edges
+    :param testing_data_ratio: ratio of edges to be used for testing
+    """
+    G = createGraph(input_path)  # create the original graph
     numEdges = G.number_of_edges()
 
     num_pos_edges = int(testing_data_ratio*numEdges)
@@ -84,7 +101,6 @@ def split_train_test_graph(input_path, output_train_path, output_test_path, fign
             G_train.remove_edge(u, v)
             i += 1
 
-    #drawGraph(G_train, f'{figname}_removal')  # draw resulting graph
     # write out list of train edges that can be used for node embedding and classifier training
     networkx.write_edgelist(G_train, output_train_path, data=False)
     node2vec_format(output_test_path, test_positive_edges)  # store test positive edges
@@ -92,37 +108,23 @@ def split_train_test_graph(input_path, output_train_path, output_test_path, fign
     return None
 
 
-def main(input_path, output_train_path, output_test_path, figname, testing_data_ratio=0.2):
-    split_train_test_graph(input_path, output_train_path, output_test_path, figname, testing_data_ratio)
+def main(input_path, output_train_path, output_test_path, testing_data_ratio=0.2):
+    """
+       main function that runs the whole process.
+
+       :param input_path: path to original data
+       :param output_train_path: path to save file with training edges
+       :param output_test_path: path to file with test edges
+       :param testing_data_ratio: ratio of edges to be used for testing
+       """
+    split_train_test_graph(input_path, output_train_path, output_test_path, testing_data_ratio)
 
 
 if __name__ == "__main__":
-    input_path = '../NDFRT/NDF.edgelist'
-    figname = 'NDFRT'
-    output_train_path = '../NDFRT/train_edges'
-    output_test_path = '../NDFRT/test_edges'
-    testing_data_ratio = 0.2
+    args = parser.parse_args()
+    input_path = args.input_path
+    output_train_path = args.output_train_path
+    output_test_path = args.output_test_path
+    testing_data_ratio = args.testing_data_ratio
 
-    main(input_path, output_train_path, output_test_path, figname, testing_data_ratio)
-
-    """    
-    input_path = '../facebook_data/facebook_combined.txt'  # '../karate/karate.edgelist'
-    figname = 'facebook'  # 'karate'
-    output_train_path = '../facebook_data/train_edges'  # '../karate'
-    output_test_path = '../facebook_data/test_edges'  # '../karate'
-    testing_data_ratio = 0.2
-    """
-
-    """
-    input_path = '../NDFRT/NDF.edgelist'
-    figname =  'NDFRT'
-    output_train_path = '../NDFRT/train_edges'
-    output_test_path = '../NDFRT/test_edges'
-    testing_data_ratio = 0.2
-    
-    input_path = '../karate/karate.edgelist'
-    figname =  'karate'
-    output_train_path = '../karate/train_edges'
-    output_test_path = '../karate/test_edges'
-    testing_data_ratio = 0.2
-    """
+    main(input_path, output_train_path, output_test_path, testing_data_ratio)

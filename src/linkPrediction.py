@@ -1,18 +1,35 @@
 """
 In this file the link prediction method of node2vec is implemented.
+A classifier LogisticRegression is used.
+For each of the binary operators proposed in the original paper, a prediction is performed.
 """
+import argparse
 import copy
-import itertools
 import random
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, roc_auc_score
 import networkx as nx
+from dataProcessing import createGraph
 
 # =========================================================
 
+# creating a parser
+parser = argparse.ArgumentParser(description="run linkPrediction.")
+parser.add_argument("--original_edges_path", type=str, required=True, help="path to the original edgelist")
+parser.add_argument("--node_embeddings_path", type=str, required=True, help="path to the node embeddings. ")
+parser.add_argument("--training_edges_path", type=str, required=True, help="path to train_graph edgeslist. ")
+parser.add_argument("--test_edges_path", type=str, required=True, help="path to test edgelist.")
+
+
 def generate_neg_edges(G, num_neg_edges):
+    """
+    Given a graph, sample negative edges from the complement graph.
+    :param G: graph
+    :param num_neg_edges: number of edges to sample
+    :returns neg_edges: the sampled edges
+    """
     G_comp = nx.complement(G)
     neg_edges = random.sample(G_comp.edges(), num_neg_edges)
     return neg_edges
@@ -49,7 +66,7 @@ def embeddings_dict(path):
     and features list as values.
 
     :param path: path to file containing features/embeddings of all nodes
-    :returns nodes, edges: list of nodes and edges
+    :returns embeddings: a dictionary
     """
     with open(path, 'r') as file:
         file_lines = file.readlines()
@@ -64,6 +81,15 @@ def embeddings_dict(path):
 
 
 def edge_embeddings(operator, node_embeddings, edge):
+    """
+    Given an edge and a binary operator together with node embedding dictionary,
+    compute and return the edge embedding.
+
+    :param operator: a binary operator
+    :param node_embeddings: node embeddings dictionary
+    :param edge: an edge
+    :returns edge embedding
+    """
     u, v = edge
     fu = node_embeddings[u]
     fv = node_embeddings[v]
@@ -78,8 +104,18 @@ def edge_embeddings(operator, node_embeddings, edge):
     return None
 
 
-def necessary_edges(original_edges_path, node_embeddings_path, training_edges_path, test_edges_path):
-    G = nx.read_edgelist(original_edges_path)  # original graph
+def data_extraction(original_edges_path, node_embeddings_path, training_edges_path, test_edges_path):
+    """
+    This function receives paths to data and creates and returns edges used
+    to create training and testing data for classification.
+
+    :param original_edges_path: path to original data
+    :param node_embeddings_path: path to node embeddings
+    :param training_edges_path: training edges path
+    :param test_edges_path: testing edges path
+    :returns train_positive_edges, train_negative_edges, test_positive_edges, test_negative_edges, node_embeddings
+    """
+    G = createGraph(original_edges_path)  # original graph
     G_train = nx.read_edgelist(training_edges_path)  # training graph
     _, test_positive_edges = readEdges(test_edges_path)
 
@@ -100,6 +136,17 @@ def necessary_edges(original_edges_path, node_embeddings_path, training_edges_pa
 
 def train_test_split(train_positive_edges, train_negative_edges, test_positive_edges,
                      test_negative_edges, node_embeddings, operator):
+    """
+    Function that creates and returns X_train_, y_train, X_test, y_test for classification task.
+
+    :param train_positive_edges: list of training edges
+    :param train_negative_edges: list of negative training edges
+    :param test_positive_edges: list of testing edges
+    :param test_negative_edges: list of negative testing edges
+    :param node_embeddings: node embeddings dictionary
+    :param operator: binary operator
+    :returns X_train_, y_train, X_test, y_test
+    """
 
     # define X_train_, y_train, X_test, y_test
     X_train = []
@@ -144,9 +191,10 @@ def prediction(classifier, X_train, y_train, X_test, y_test):
     """
     Function that computes the predictions of test edges, given a classifier, training data and test data
     :param classifier: a classifier
-    :param train_data: list of training edges
-    :param train_labels: list of labels of train edges
-    :return accuracy
+    :param X_train: array of training edge embeddings
+    :param y_train: array of training labels
+    :param X_test: array of testing edge embeddings
+    :param y_test: array of testing labels
     """
     model = classifier.fit(X_train, y_train)
     y_pred_proba = model.predict_proba(X_test)[:, 1]
@@ -164,14 +212,13 @@ def main(original_edges_path, node_embeddings_path, training_edges_path, test_ed
     main function that computes the link prediction accuracy, given an operator,
     a classifier, and paths to train/test data.
 
-    :param operators: binary operators
-    :param classifier: a classifier, ex. LogisticRegression()
-    :param train_embeddings_path: path to node features
-    :param train_edges_path: path to training data
-    :param test_edges_path: path to test data
+    :param original_edges_path: original data
+    :param node_embeddings_path: node embeddings
+    :param training_edges_path: path to training data
+    :param test_edges_path: path to testing data
     """
     train_positive_edges, train_negative_edges, test_positive_edges, test_negative_edges, node_embeddings = \
-        necessary_edges(original_edges_path, node_embeddings_path, training_edges_path, test_edges_path)
+        data_extraction(original_edges_path, node_embeddings_path, training_edges_path, test_edges_path)
     classifier = LogisticRegression(max_iter=1000)
     operators = ['Average', 'Hadamard', 'Weighted_L1', 'Weighted_L2']
     for operator in operators:
@@ -185,30 +232,10 @@ def main(original_edges_path, node_embeddings_path, training_edges_path, test_ed
 
 
 if __name__ == "__main__":
-    original_edges_path = '../facebook_data/facebook_combined.txt'
-    node_embeddings_path = '../facebook_data/facebook.emb'  # '../karate/karate.emb'
-    training_edges_path = '../facebook_data/train_edges'  # '../karate/train.pkl'
-    test_edges_path = '../facebook_data/test_edges'
+    args = parser.parse_args()
+    original_edges_path = args.original_edges_path
+    node_embeddings_path = args.node_embeddings_path
+    training_edges_path = args.training_edges_path
+    test_edges_path = args.test_edges_path
 
     main(original_edges_path, node_embeddings_path, training_edges_path, test_edges_path)
-    #nodes, edges = readEdges(original_edges_path)
-    #print(nodes)
-    #print(edges)
-    """
-    original_edges_path = '../facebook_data/facebook_combined.txt'
-    node_embeddings_path = '../facebook_data/facebook.emb'  # '../karate/karate.emb'
-    training_edges_path = '../facebook_data/train_edges'  # '../karate/train.pkl'
-    test_edges_path = '../facebook_data/test_edges'
-    """
-
-    """
-    original_edges_path = '../karate/karate.edgelist'
-    node_embeddings_path = '../karate/karate.emb'  # '../karate/karate.emb'
-    training_edges_path = '../karate/train_edges'  # '../karate/train.pkl'
-    test_edges_path = '../karate/test_edges'
-    
-    original_edges_path = '../NDFRT/NDF.edgelist'
-    node_embeddings_path = '../NDFRT/NDF.emb'  # '../karate/karate.emb'
-    training_edges_path = '../NDFRT/train_edges'  # '../karate/train.pkl'
-    test_edges_path = '../NDFRT/test_edges'
-    """
