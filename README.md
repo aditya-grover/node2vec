@@ -9,20 +9,24 @@ Adding to the node2vec algorithm, we included more code of our own to replicate 
 
 ## Clustering
 
-Code is available in `src/kmeans.py`. The initial purpose was to reproduce Figure 3 in node2vec paper. Therefore, the default type of analysis is homophily clustering with Les Miserables character graph. To use the code for other purposes, please read below about changing parameter values.
+Code is available in `src/kmeans.py`. To run the code from the command line use:
+
+`python src/kmeans.py`
+
+The initial purpose was to reproduce Figure 3 in node2vec paper. Therefore, the default type of analysis is homophily clustering of Les Misérables characters. To use the code for other purposes, please read below about changing parameter values.
 
 Three types of analyses are supported: 
 
 1. Homophily (community structure) with node2vec embeddings.
 2. Structural equivalance with node2vec embeddings.
-3. Structural equivalance with struc2vec embeddings. struc2vec embeddings for Les Miserables and [TerroristRel](https://networkrepository.com/TerroristRel.php) data sets are already available. To obtain embeddings for other data sets in Python 3 consider using, for example, [BioNEV](https://github.com/xiangyue9607/BioNEV).
+3. Structural equivalance with struc2vec embeddings. struc2vec embeddings for Les Misérables and [TerroristRel](https://networkrepository.com/TerroristRel.php) data sets are already available. To obtain embeddings for other data sets in Python 3 consider using, for example, [BioNEV](https://github.com/xiangyue9607/BioNEV).
 
 Change the value of the `SWITCH` variable to define the type of analysis. Available options are `homophily`, `str_eq`, `struc2vec`.
 
 Two types of graph data sets are supported:
 
 1. An arbitrary data set in an external edgelist text file.
-2. Les Miserables from `nx.generators.social.les_miserables_graph()` because it contains the names of characters in the novel instead of integer identifiers.
+2. Les Misérables from `nx.generators.social.les_miserables_graph()` because it contains the names of characters in the novel instead of integer identifiers.
 
 Change the value of the `DATA_NAME` variable to define a data set to be used. The value should be the same as in the folder name and the edgelist file name. For example, use `TerroristRel` to import from `graph/TerroristRel/TerroristRel.edgelist`.
 
@@ -38,7 +42,7 @@ The code outputs images into the `images/` folder.
 
 
 ## Classification
-Code is available in `src/multi-classification.ipynb` (Jupyter Notebook)
+Code is available in `src/classification.ipynb` (Jupyter Notebook)
 Sections of the notebook: 
 - Replicate the classification experiment in section **4.3 Multi-label classification** 
 - Grid search on `p` and `q`
