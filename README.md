@@ -50,9 +50,9 @@ Sections of the notebook:
 ## Link Prediction
 - The files src/dataProcessing.py, src/main.py and src/linkPrediction.py are used for link prediction.
 - Given an original edgelist, link prediction is performed as follows, where the data used is karate.edgelist:
-- 1. To obtain training graph and testing edges, execute the following command from the project home directory:
+1. To obtain training graph and testing edges, execute the following command from the project home directory:
 ```python3 src/dataProcessing.py --input_path graph/karate/karate.edgelist --output_train_path graph/karate/train_edges --output_test_path graph/karate/test_edges --testing_data_ratio 0.2```
-- 2. To obtain node embeddings, execute the following command from the project home directory: 
+2. To obtain node embeddings, execute the following command from the project home directory: 
 ```python3 src/main.py --input graph/karate/train_edges --output emb/karate.emb     ```
-- 3.  To obtain predictions, execute the following command from the project home directory
+3.  To obtain predictions, execute the following command from the project home directory
 ```python3 src/linkPrediction.py --original_edges_path graph/karate/karate.edgelist --node_embeddings_path emb/karate.emb --training_edges_path graph/karate/train_edges --test_edges_path graph/karate/test_edges```
