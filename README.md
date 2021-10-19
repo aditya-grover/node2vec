@@ -1,69 +1,58 @@
 This is a fork from [aditya-grover/node2vec](https://github.com/aditya-grover/node2vec).
 
-Additional sections has been added [here](#Changes)
-# node2vec
 
-This repository provides a reference implementation of *node2vec* as described in the paper:<br>
-> node2vec: Scalable Feature Learning for Networks.<br>
-> Aditya Grover and Jure Leskovec.<br>
-> Knowledge Discovery and Data Mining, 2016.<br>
-> <Insert paper link>
+To run the code, install packages in `requirements.txt` file.
 
-The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the [project page](https://snap.stanford.edu/node2vec/) for more details. 
+Check the original repository for instructions to run node2vec.
 
-### Basic Usage
+Adding to the node2vec algorithm, we included more code of our own to replicate the experiments mentioned in the paper and a number of experiments:
 
-#### Example
-To run *node2vec* on Zachary's karate club network, execute the following command from the project home directory:<br/>
-	``python src/main.py --input graph/karate.edgelist --output emb/karate.emd``
+## Clustering
 
-#### Options
-You can check out the other options available to use with *node2vec* using:<br/>
-	``python src/main.py --help``
+Code is available in `src/kmeans.py`. To run the code from the command line use:
 
-#### Input
-The supported input format is an edgelist:
+`python src/kmeans.py`
 
-	node1_id_int node2_id_int <weight_float, optional>
-		
-The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags.
+The initial purpose was to reproduce Figure 3 in node2vec paper. Therefore, the default type of analysis is homophily clustering of Les Misérables characters. To use the code for other purposes, please read below about changing parameter values.
 
-#### Output
-The output file has *n+1* lines for a graph with *n* vertices. 
-The first line has the following format:
+Three types of analyses are supported: 
 
-	num_of_nodes dim_of_representation
+1. Homophily (community structure) with node2vec embeddings.
+2. Structural equivalance with node2vec embeddings.
+3. Structural equivalance with struc2vec embeddings. struc2vec embeddings for Les Misérables and [TerroristRel](https://networkrepository.com/TerroristRel.php) data sets are already available. To obtain embeddings for other data sets in Python 3 consider using, for example, [BioNEV](https://github.com/xiangyue9607/BioNEV).
 
-The next *n* lines are as follows:
-	
-	node_id dim1 dim2 ... dimd
+Change the value of the `SWITCH` variable to define the type of analysis. Available options are `homophily`, `str_eq`, `struc2vec`.
 
-where dim1, ... , dimd is the *d*-dimensional representation learned by *node2vec*.
+Two types of graph data sets are supported:
 
-### Citing
-If you find *node2vec* useful for your research, please consider citing the following paper:
+1. An arbitrary data set in an external edgelist text file.
+2. Les Misérables from `nx.generators.social.les_miserables_graph()` because it contains the names of characters in the novel instead of integer identifiers.
 
-	@inproceedings{node2vec-kdd2016,
-	author = {Grover, Aditya and Leskovec, Jure},
-	 title = {node2vec: Scalable Feature Learning for Networks},
-	 booktitle = {Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
-	 year = {2016}
-	}
+Change the value of the `DATA_NAME` variable to define a data set to be used. The value should be the same as in the folder name and the edgelist file name. For example, use `TerroristRel` to import from `graph/TerroristRel/TerroristRel.edgelist`.
+
+Additional parameters are set in the `args` variable:
+
+* node2vec's parameters `D` (dimensionality of embeddings), `P` (return parameter), `K` (context size) and `L` (walk length).
+* `edgelist_delim`, default is comma.
+
+A few other parameters depend on the type of analysis and are set automatically. For example, homophily by default sets the in-out parameter `Q` to 0.5 and the number of clusters `n_clusters` to 6. This can be changed in the `set_other_parameters()` function if needed.
+
+The code outputs images into the `images/` folder.
 
 
-### Miscellaneous
 
-Please send any questions you might have about the code and/or the algorithm to <adityag@cs.stanford.edu>.
-
-*Note:* This is only a reference implementation of the *node2vec* algorithm and could benefit from several performance enhancement schemes, some of which are discussed in the paper.
-
-# Changes
-
-- Added progress bar to preprocessing task.
-- Changes to use python3 and higher versions of packages.
-- Added multi-classification.ipynb to use the embeddings to do label classification. 
-Note: Install jupyter notebook to run the file
-    ```
-    pip install jupyter 
-    jupyter notebook
-    ```
+## Classification
+Code is available in `src/classification.ipynb` (Jupyter Notebook)
+Sections of the notebook: 
+- Replicate the classification experiment in section **4.3 Multi-label classification** 
+- Grid search on `p` and `q`
+- Scalability test (not used in presentataion)
+## Link Prediction
+- The files src/dataProcessing.py, src/main.py and src/linkPrediction.py are used for link prediction.
+- Given an original edgelist, link prediction is performed as follows, where the data used is karate.edgelist:
+- 1. To obtain training graph and testing edges, execute the following command from the project home directory:
+```python3 src/dataProcessing.py --input_path graph/karate/karate.edgelist --output_train_path graph/karate/train_edges --output_test_path graph/karate/test_edges --testing_data_ratio 0.2```
+- 2. To obtain node embeddings, execute the following command from the project home directory: 
+```python3 src/main.py --input graph/karate/train_edges --output emb/karate.emb     ```
+- 3.  To obtain predictions, execute the following command from the project home directory
+```python3 src/linkPrediction.py --original_edges_path graph/karate/karate.edgelist --node_embeddings_path emb/karate.emb --training_edges_path graph/karate/train_edges --test_edges_path graph/karate/test_edges```
