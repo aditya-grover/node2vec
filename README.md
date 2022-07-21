@@ -7,6 +7,8 @@ This repository provides a reference implementation of *node2vec* as described i
 > <Insert paper link>
 
 The *node2vec* algorithm learns continuous representations for nodes in any (un)directed, (un)weighted graph. Please check the [project page](https://snap.stanford.edu/node2vec/) for more details. 
+	
+Node2Vec paper reading and code tutorials(in Chinese): https://www.bilibili.com/video/BV1BS4y1E7tf
 
 ### Basic Usage
 
